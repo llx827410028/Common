@@ -18,6 +18,6 @@ typedef void(^RequstsFaild)(NSError*);
 //检测发货
 -(void)checkShipments;
 -(void)buyEvent:(NSDictionary *)params withHUD:(BOOL)hud withSuccessBlock:(PurchaseCallBack)successblock withFaildBlock:(FailedPurchaseCallBack)faildBlock;
--(void)postData:(NSDictionary*)params andisHud:(BOOL)isHud andUrl:(NSString *)url andBackObjName:(NSString *)objName withSuccessBlock:(ZhiboRequstsSuccess) successBlock withFaildBlock:(ZhiboRequstsFaild)faildBlock;
--(void)getData:(NSString*)params andisHud:(BOOL)isHud andUrl:(NSString *)url andBackObjName:(NSString *)objName withSuccessBlock:(ZhiboRequstsSuccess) successBlock withFaildBlock:(ZhiboRequstsFaild)faildBlock;
+-(void)postData:(NSDictionary*)params andisHud:(BOOL)isHud andUrl:(NSString *)url andBackObjName:(NSString *)objName withSuccessBlock:(RequstsSuccess) successBlock withFaildBlock:(RequstsFaild)faildBlock;
+-(void)getData:(NSString*)params andisHud:(BOOL)isHud andUrl:(NSString *)url andBackObjName:(NSString *)objName withSuccessBlock:(RequstsSuccess) successBlock withFaildBlock:(RequstsFaild)faildBlock;
 @end

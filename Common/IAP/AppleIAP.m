@@ -9,10 +9,7 @@
 #import "AppleIAP.h"
 #import <StoreKit/StoreKit.h>
 
-
-
 @implementation AppleProduct
-
 -(instancetype)copyWithZone:(NSZone *)zone
 {
     
@@ -39,7 +36,7 @@
 
 -(NSString*)description
 {
-    NSString *sting = [NSString stringWithFormat:@"productIdentifier= %@ | receipt =%@ | price=%lf | quantity = %i | orderID = %@",_productIdentifier,_receipt,_price,_quantity,_orderID];
+    NSString *sting = [NSString stringWithFormat:@"productIdentifier= %@ | receipt =%@ | price=%lf | quantity = %li | orderID = %@",_productIdentifier,_receipt,_price,(long)_quantity,_orderID];
     return sting;
 }
 
@@ -48,8 +45,6 @@
 
 
 @interface AppleIAP() <SKProductsRequestDelegate,SKPaymentTransactionObserver>
-
-
 @end
 
 @implementation AppleIAP
@@ -71,12 +66,9 @@
         if ([SKPaymentQueue canMakePayments]) {
             _product =  [[AppleProduct alloc] init];
             // 执行下面提到的第5步：
-           
             [[SKPaymentQueue defaultQueue] addTransactionObserver:self];
         } else {
-            
             [self faildEvent:800 withMsg:@"失败，用户禁止应用内付费购买."];
-           
         }
     }
     return self;
@@ -92,8 +84,8 @@
         self.failedblock(code,self.product);
     }
     NSLog(@"%@", msg);
-
 }
+
 -(void)successEvent:(int)code withProductIdentifier:(NSString*)pid withReceipt:(NSString*)receipt
 {
     self.product.productIdentifier = pid;
@@ -105,7 +97,6 @@
     if (self.purcaseblock) {
         self.purcaseblock(code,self.product);
     }
-
 }
 
 - (void)getProductInfo:(NSString *)productID  {
@@ -124,6 +115,24 @@
         [self faildEvent:801 withMsg:@"无法获取产品信息，购买失败。" ];
         return;
     }
+    
+    NSArray *producta = response.products;
+    if([producta count] == 0){
+        NSLog(@"--------------没有商品------------------");
+        return;
+    }
+    
+    NSLog(@"productID:%@", response.invalidProductIdentifiers);
+    NSLog(@"产品付费数量:%lu",(unsigned long)[producta count]);
+    
+    for (SKProduct *pro in producta) {
+        NSLog(@"%@", [pro description]);
+        NSLog(@"%@", [pro localizedTitle]);
+        NSLog(@"%@", [pro localizedDescription]);
+        NSLog(@"%@", [pro price]);
+        NSLog(@"%@", [pro productIdentifier]);
+    }
+    
     SKProduct  *product =myProduct[0];
     _product.price =[product.price doubleValue];
     SKPayment * payment = [SKPayment paymentWithProduct:product];
@@ -141,13 +150,15 @@
         {
             case SKPaymentTransactionStatePurchased://交易完成
             {
-                [MBProgressHUD hideHUDForView:[VTTool appWindow] animated:YES];
                 NSLog(@"transactionIdentifier = %@", transaction.transactionIdentifier);
                 [self completeTransaction:transaction];
             }
                 break;
             case SKPaymentTransactionStateFailed://交易失败
+            {
+                NSLog(@"transaction.error.code-->%ld",transaction.error.code);
                 [self failedTransaction:transaction];
+            }
                 break;
             case SKPaymentTransactionStateRestored://已经购买过该商品
                 [self restoreTransaction:transaction];
@@ -156,7 +167,7 @@
                 NSLog(@"商品添加进列表");
                 break;
             case SKPaymentTransactionStateDeferred:      //商品添加进列表
-                NSLog(@"商品添加进f");
+                NSLog(@"商品添加进");
                 break;
             default:
                 break;
@@ -165,32 +176,32 @@
 }
 //交易完成
 - (void)completeTransaction:(SKPaymentTransaction *)transaction {
-    // Your application should implement these two methods.
-    NSString * productIdentifier = transaction.payment.productIdentifier;
-    NSString * receipt = [transaction.transactionReceipt base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    NSString *productIdentifier = transaction.payment.productIdentifier;
+    NSData *transactionReceiptData = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
+    NSString *receipt = [transactionReceiptData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
     if ([productIdentifier length] > 0) {
         // 向自己的服务器验证购买凭证
         [self successEvent:0 withProductIdentifier:productIdentifier withReceipt:receipt];
            }
-    // Remove the transaction from the payment queue.
+    
     [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
 }
+
 //失败
 - (void)failedTransaction:(SKPaymentTransaction *)transaction {
     if(transaction.error.code != SKErrorPaymentCancelled) {
         [self faildEvent:1 withMsg:@"购买失败"];
         
     } else {
-          [self faildEvent:4 withMsg:@"用户取消交易"];
+        [self faildEvent:4 withMsg:@"用户取消交易"];
         NSLog(@"用户取消交易");
     }
     [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
 }
+
 //已经购买过该商品
 - (void)restoreTransaction:(SKPaymentTransaction *)transaction {
-    // 对于已购商品，处理恢复购买的逻辑
     [self faildEvent:2 withMsg:@"重复订单"];
-   
     [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
 }
 

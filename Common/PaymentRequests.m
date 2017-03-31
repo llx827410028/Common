@@ -68,7 +68,7 @@
     }
 }
 
--(void)getData:(NSString *)params andisHud:(BOOL)isHud andUrl:(NSString *)url andBackObjName:(NSString *)objName withSuccessBlock:(ZhiboRequstsSuccess)successBlock withFaildBlock:(ZhiboRequstsFaild)faildBlock{
+-(void)getData:(NSString *)params andisHud:(BOOL)isHud andUrl:(NSString *)url andBackObjName:(NSString *)objName withSuccessBlock:(RequstsSuccess)successBlock withFaildBlock:(RequstsFaild)faildBlock{
     NSLog(@"postData--->（%@）请求数据 -->%@",url,params);
     if (isHud) {
           [MBProgressHUD showHUDAddedTo:[VTTool appWindow] animated:YES];
@@ -100,7 +100,7 @@
 }
 
 
--(void)postData:(NSDictionary*)params andisHud:(BOOL)isHud andUrl:(NSString *)url andBackObjName:(NSString *)objName withSuccessBlock:(ZhiboRequstsSuccess) successBlock withFaildBlock:(ZhiboRequstsFaild)faildBlock{
+-(void)postData:(NSDictionary*)params andisHud:(BOOL)isHud andUrl:(NSString *)url andBackObjName:(NSString *)objName withSuccessBlock:(RequstsSuccess) successBlock withFaildBlock:(RequstsFaild)faildBlock{
     NSLog(@"postData--->（%@）请求数据 -->%@",url,params);
     if (isHud) {
         [MBProgressHUD showHUDAddedTo:[VTTool appWindow] animated:YES];
@@ -134,7 +134,7 @@
 -(void)buyEvent:(NSDictionary *)params withHUD:(BOOL)hud withSuccessBlock:(PurchaseCallBack)successblock withFaildBlock:(FailedPurchaseCallBack)faildBlock
 {
     if (hud) {
-        //
+        [MBProgressHUD showHUDAddedTo:[VTTool appWindow] animated:YES];
     }
     [AppleIAP shareInstancet].failedblock=faildBlock;
     [self getTempOrder:params withSuccessBlock:^(NSDictionary * dic) {
@@ -152,7 +152,12 @@
                 [CacheSystem removeCacheForKey:shipmentDic[orderid]];
                 successblock(1,nproduct);
                 NSLog(@"发货成功");
-                
+                if (hud) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        // 更新界面
+                        [MBProgressHUD hideHUDForView:[VTTool appWindow] animated:YES];
+                    });
+                }
             } withFaildBlock:^(NSError *error) {
                 NSLog(@"发货失败 error=%@",error);
                 
@@ -160,7 +165,22 @@
                 object.orderID =shipmentDic[orderid];
                 object.paytoken =shipmentDic[paytoken];
                 [CacheSystem addCacheObject:object forKey:object.orderID];
+                if (hud) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        // 更新界面
+                        [MBProgressHUD hideHUDForView:[VTTool appWindow] animated:YES];
+                    });
+                }
             }];
+        };
+        
+        [AppleIAP shareInstancet].failedblock = ^(int code,AppleProduct* msg){
+            if (hud) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // 更新界面
+                    [MBProgressHUD hideHUDForView:[VTTool appWindow] animated:YES];
+                });
+            }
         };
         
         [[AppleIAP shareInstancet ]getProductInfo:params[@"appStoreProductid"]];
@@ -169,6 +189,12 @@
         AppleProduct *nproduct = [[AppleIAP shareInstancet].product copy];
         nproduct.message = @"订单无效";
         faildBlock(1,nproduct);
+        if (hud) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // 更新界面
+                [MBProgressHUD hideHUDForView:[VTTool appWindow] animated:YES];
+            });
+        }
     }];
 }
 
