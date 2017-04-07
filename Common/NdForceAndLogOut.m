@@ -68,7 +68,7 @@
 
 - (void)showAlertWithDic:(NSDictionary *)dic{
     self.o_apkurl = dic[@"apkurl"];
-    NSDictionary *cdic = [VTTool getPlistDicValueWithKey:@"Gamecenter"];
+    NSDictionary *gameDic = [VTTool getPlistDicValueWithKey:@"Gamecenter"];
     if (!dic) {
         return;
     }
@@ -77,18 +77,18 @@
         if ([dic[@"isforce"] intValue]) {
             UIAlertView *alert = [[UIAlertView alloc]init];
             objc_setAssociatedObject(alert, "force", dic, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-            alert.title = cdic[@"更新"];
+            alert.title = gameDic[@"更新"];
             alert.tag = update_force_tag;
             alert.delegate = self;
             alert.message = dic[@"updateword"];
-            [alert addButtonWithTitle:cdic[@"确定"]];
+            [alert addButtonWithTitle:gameDic[@"确定"]];
             [alert show];
         }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:dic[@"更新"]
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:gameDic[@"更新"]
                                                             message:dic[@"updateword"]
                                                            delegate:self
-                                                  cancelButtonTitle:cdic[@"取消"]
-                                                  otherButtonTitles:cdic[@"确定"],nil];
+                                                  cancelButtonTitle:gameDic[@"取消"]
+                                                  otherButtonTitles:gameDic[@"确定"],nil];
             objc_setAssociatedObject(alert, "force", dic, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
             alert.tag = update_tag;
             [alert show];

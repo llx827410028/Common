@@ -177,8 +177,7 @@
 //交易完成
 - (void)completeTransaction:(SKPaymentTransaction *)transaction {
     NSString *productIdentifier = transaction.payment.productIdentifier;
-    NSData *transactionReceiptData = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
-    NSString *receipt = [transactionReceiptData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    NSString * receipt = [transaction.transactionReceipt base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
     if ([productIdentifier length] > 0) {
         // 向自己的服务器验证购买凭证
         [self successEvent:0 withProductIdentifier:productIdentifier withReceipt:receipt];
